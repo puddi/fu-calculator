@@ -215,16 +215,27 @@ const FuForm = ({submitFu}: FuFormProps) => {
             <div className={[styles.miscCheckbox, wonWithClosedRon && styles.miscCheckboxChecked].join(' ')}></div>
             <span>Won via Ron with a Closed Hand</span>
           </div>
-          <div onClick={() => setWonWithYakuhaiPair(!wonWithYakuhaiPair)}>
+          <div onClick={() => {
+            if (wonWithYakuhaiPair) {
+              setWonWithDoubleYakuhaiPair(false);
+            }
+            setWonWithYakuhaiPair(!wonWithYakuhaiPair);
+          }}>
             <div className={[styles.miscCheckbox, wonWithYakuhaiPair && styles.miscCheckboxChecked].join(' ')}></div>
             <span>Yakuhai Pair</span>
           </div>
-          {wonWithYakuhaiPair && (
-            <div onClick={() => setWonWithDoubleYakuhaiPair(!wonWithDoubleYakuhaiPair)}>
-              <div className={[styles.miscCheckbox, wonWithDoubleYakuhaiPair && styles.miscCheckboxChecked].join(' ')}></div>
-              <span>Yakuhai Pair is both Round and Seat Wind</span>
-            </div>
-          )}
+          <div
+            className={!wonWithYakuhaiPair ? styles.disabled : ''}
+            onClick={() => {
+              if (!wonWithYakuhaiPair) {
+                return;
+              }
+              setWonWithDoubleYakuhaiPair(!wonWithDoubleYakuhaiPair)
+            }}
+          >
+            <div className={[styles.miscCheckbox, wonWithDoubleYakuhaiPair && styles.miscCheckboxChecked].join(' ')}></div>
+            <span>Yakuhai Pair is both Round and Seat Wind</span>
+          </div>
         </div>
       </>
     );
