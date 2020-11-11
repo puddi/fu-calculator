@@ -169,6 +169,10 @@ const FuForm = ({submitFu}: FuFormProps) => {
         setWait(null);
       }
     }
+
+    if (!handCouldBeClosed && wonWithClosedRon) {
+      setWonWithClosedRon(false);
+    }
   }, [meld1, meld2, meld3, meld4])
 
   const renderMainForm = () => {
