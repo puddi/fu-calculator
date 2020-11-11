@@ -6,7 +6,7 @@ import calculateFu from './calculateFu';
 const DEFAULT_MELD = {
   type: MeldTypes.SEQUENCE,
   isOpen: false,
-  isSimple: false,
+  isSimple: true,
 }
 
 const isValidMeld = (meld: Meld) => {
@@ -29,25 +29,33 @@ const MeldPicker = ({meld, setMeld, title}: MeldPickerProps) => {
     });
   }
 
-  const createProps = (type: MeldTypes, isSimple: boolean) => {
+  const createTypeProps = (type: MeldTypes) => {
     return {
-      className: meld.type === type && meld.isSimple === isSimple ? styles.activeButton : '',
-      onClick: () => createAndSetMeld(type, isSimple, meld.isOpen)
+      className: meld.type === type ? styles.activeButton : '',
+      onClick: () => createAndSetMeld(type, meld.isSimple, meld.isOpen)
     }
   }
 
   return (
     <>
       <p className={styles.meldTitle}>{title}</p>
+      <div className={styles.meldTypes}>
+        <div {...createTypeProps(MeldTypes.SEQUENCE)}>Sequence</div>
+        <div {...createTypeProps(MeldTypes.TRIPLET)}>Triplet</div>
+        <div {...createTypeProps(MeldTypes.QUAD)}>Quad</div>
+      </div>
       <div className={styles.meldOptions}>
-        <div {...createProps(MeldTypes.TRIPLET, true)}>Triplet (Simple)</div>
-        <div {...createProps(MeldTypes.TRIPLET, false)}>Triplet (H / T)</div>
-        <div {...createProps(MeldTypes.QUAD, true)}>Quad (Simple)</div>
-        <div {...createProps(MeldTypes.QUAD, false)}>Quad (H / T)</div>
-        <div {...createProps(MeldTypes.SEQUENCE, true)}>Sequence</div>
+        <div className={styles.spacer}></div>
         <div className={styles.meldOpenOption} onClick={() => createAndSetMeld(meld.type, meld.isSimple, !meld.isOpen)}>
-          <span className={[styles.meldOpenText, meld.isOpen && styles.meldOpenTextActive].join(' ')}>Open</span>
-          <span className={[styles.meldClosedText, !meld.isOpen && styles.meldOpenTextActive].join(' ')}>Closed</span>
+          <span className={[styles.meldOptionText, meld.isOpen && styles.meldOptionTextActive].join(' ')}>Open</span>
+          <span className={[styles.meldOptionText, !meld.isOpen && styles.meldOptionTextActive].join(' ')}>Closed</span>
+        </div>
+        <div
+          className={[styles.meldSimpleOption, meld.type == MeldTypes.SEQUENCE && styles.meldSimpleOptionHidden].join(' ')}
+          onClick={() => createAndSetMeld(meld.type, !meld.isSimple, meld.isOpen)}
+        >
+          <span className={[styles.meldOptionText, meld.isSimple && styles.meldOptionTextActive].join(' ')}>Simple</span>
+          <span className={[styles.meldOptionText, !meld.isSimple && styles.meldOptionTextActive].join(' ')}>H / T</span>
         </div>
       </div>
     </>
@@ -94,17 +102,7 @@ const FuForm = ({submitFu}: FuFormProps) => {
   const [wonWithYakuhaiPair, setWonWithYakuhaiPair] = React.useState<boolean>(false);
   const [wonWithDoubleYakuhaiPair, setWonWithDoubleYakuhaiPair] = React.useState<boolean>(false);
 
-  const isReady = React.useMemo(() => {
-    const melds = [meld1, meld2, meld3, meld4];
-
-    if (wonByChiitoi == null) {
-      return false;
-    } else if (wonByChiitoi === true) {
-      return true;
-    } else {
-      return melds.every(meld => isValidMeld(meld)) && wait != null
-    }
-  }, [meld1, meld2, meld3, meld4, wonByChiitoi, wait]);
+  const isReady = (wonByChiitoi != null && (wonByChiitoi === false ? wait != null : true));
 
   const resetForm = () => {
     setWonByChiitoi(null);
@@ -143,6 +141,7 @@ const FuForm = ({submitFu}: FuFormProps) => {
     return (
       <>
         <p>What were your melds?</p>
+        <p className={styles.subnote}>Remember - completing a meld via Ron means it's open!</p>
         <MeldPicker meld={meld1} setMeld={setMeld1} title={'First Meld'} />
         <MeldPicker meld={meld2} setMeld={setMeld2} title={'Second Meld'} />
         <MeldPicker meld={meld3} setMeld={setMeld3} title={'Third Meld'} />
@@ -192,12 +191,12 @@ const FuForm = ({submitFu}: FuFormProps) => {
       <div className={styles.chiitoiButtonsContainer}>
         <div
           className={[styles.chiitoiButton, wonByChiitoi === true && styles.activeButton].join(' ')}
-          onClick={() => setWonByChiitoi(true)}>
+          onClick={() => setWonByChiitoi(wonByChiitoi === true ? null : true)}>
           Yes
         </div>
         <div
           className={[styles.chiitoiButton, wonByChiitoi === false && styles.activeButton].join(' ')}
-          onClick={() => setWonByChiitoi(false)}>
+          onClick={() => setWonByChiitoi(wonByChiitoi === false ? null : false)}>
           No
         </div>
       </div>
