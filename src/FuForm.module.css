@@ -105,7 +105,7 @@
   margin: 5px 5px;
   border: 1px solid #49515f;
   cursor: pointer;
-  transition: background-color .2s;
+  transition: background-color .2s, opacity .2s;
 }
 
 .miscOptions > div {
@@ -114,6 +114,7 @@
   line-height: 22px;
   cursor: pointer;
   margin: 16px 0 16px 10px;
+  transition: opacity .2s;
 }
 
 .miscCheckbox {
@@ -173,4 +174,9 @@
 
 .spacer {
   height: 70px;
+}
+
+.disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5;
 }

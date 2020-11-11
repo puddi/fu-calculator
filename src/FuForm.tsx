@@ -9,6 +9,8 @@ const DEFAULT_MELD = {
   isSimple: true,
 }
 
+const SEQUENCE_WAITS = [WaitTypes.SEQUENCE_TWO_SIDED, WaitTypes.SEQUENCE_ONE_SIDED, WaitTypes.SEQUENCE_GAP];
+
 const isValidMeld = (meld: Meld) => {
   return meld.type !== DEFAULT_MELD.type || meld.isOpen !== DEFAULT_MELD.isOpen || meld.isSimple !== DEFAULT_MELD.isSimple;
 }
@@ -65,19 +67,35 @@ const MeldPicker = ({meld, setMeld, title}: MeldPickerProps) => {
 type WaitPickerProps = {
   wait: WaitTypes | null,
   setWait: (wait: WaitTypes) => unknown,
+  allSequences: boolean,
+  noSequences: boolean,
 }
 
-const WaitPicker = ({wait, setWait}: WaitPickerProps) => {
+const WaitPicker = ({wait, setWait, allSequences, noSequences}: WaitPickerProps) => {
+
   const createProps = (type: WaitTypes) => {
+    const shouldBeDisabled = (
+      (SEQUENCE_WAITS.includes(type) && noSequences) ||
+      (type === WaitTypes.TRIPLET && allSequences)
+    );
+
     return {
-      className: wait === type ? styles.activeButton : '',
-      onClick: () => setWait(type)
+      className: [
+        wait === type ? styles.activeButton : '',
+        shouldBeDisabled ? styles.disabled : '',
+      ].join(' '),
+      onClick: () => {
+        if (shouldBeDisabled) {
+          return;
+        }
+        setWait(type)
+      }
     }
   }
 
   return (
     <div className={styles.waitOptions}>
-      <div {...createProps(WaitTypes.SEQUENCE_TWO_SIDED)}>Two-sided Sequence Wait</div>
+      <div {...createProps(WaitTypes.SEQUENCE_TWO_SIDED, )}>Two-sided Sequence Wait</div>
       <div {...createProps(WaitTypes.SEQUENCE_ONE_SIDED)}>One-sided Sequence Wait</div>
       <div {...createProps(WaitTypes.SEQUENCE_GAP)}>Gap Sequence Wait</div>
       <div {...createProps(WaitTypes.PAIR)}>Pair Wait</div>
@@ -103,6 +121,11 @@ const FuForm = ({submitFu}: FuFormProps) => {
   const [wonWithDoubleYakuhaiPair, setWonWithDoubleYakuhaiPair] = React.useState<boolean>(false);
 
   const isReady = (wonByChiitoi != null && (wonByChiitoi === false ? wait != null : true));
+
+  const melds = [meld1, meld2, meld3, meld4];
+  const allSequences = melds.every(meld => meld.type === MeldTypes.SEQUENCE);
+  const noSequences = melds.every(meld => meld.type !== MeldTypes.SEQUENCE);
+  const handCouldBeClosed = melds.filter(meld => meld.isOpen).length <= 1;
 
   const resetForm = () => {
     setWonByChiitoi(null);
@@ -137,7 +160,20 @@ const FuForm = ({submitFu}: FuFormProps) => {
     submitFu(fu, resetForm);
   }
 
+  // update waits and misc if melds make them impossible.
+  React.useEffect(() => {
+    if (wait != null) {
+      if (noSequences && SEQUENCE_WAITS.includes(wait)) {
+        setWait(null);
+      } else if (allSequences && wait === WaitTypes.TRIPLET) {
+        setWait(null);
+      }
+    }
+  }, [meld1, meld2, meld3, meld4])
+
   const renderMainForm = () => {
+    const melds = [meld1, meld2, meld3, meld4];
+
     return (
       <>
         <p>What were your melds?</p>
@@ -148,25 +184,34 @@ const FuForm = ({submitFu}: FuFormProps) => {
         <MeldPicker meld={meld4} setMeld={setMeld4} title={'Fourth Meld'} />
         <hr></hr>
         <p>What was your wait?</p>
-        <WaitPicker wait={wait} setWait={setWait} />
+        <WaitPicker wait={wait} setWait={setWait} allSequences={allSequences} noSequences={noSequences} />
         <hr></hr>
         <p>Misc. - Pick all that apply</p>
         <div className={styles.miscOptions}>
-          <div onClick={() => {
-            setWonWithTsumo(!wonWithTsumo);
-            if (wonWithClosedRon) {
-              setWonWithClosedRon(false);
+          <div
+            onClick={() => {
+              setWonWithTsumo(!wonWithTsumo);
+              if (wonWithClosedRon) {
+                setWonWithClosedRon(false);
+              }
             }
-          }}>
+          }>
             <div className={[styles.miscCheckbox, wonWithTsumo && styles.miscCheckboxChecked].join(' ')}></div>
             <span>Won via Tsumo</span>
           </div>
-          <div onClick={() => {
-            setWonWithClosedRon(!wonWithClosedRon);
-            if (wonWithTsumo) {
-              setWonWithTsumo(false);
-            }
-          }}>
+          <div
+            className={!handCouldBeClosed ? styles.disabled : ''}
+            onClick={() => {
+              if (!handCouldBeClosed) {
+                return;
+              }
+
+              setWonWithClosedRon(!wonWithClosedRon);
+              if (wonWithTsumo) {
+                setWonWithTsumo(false);
+              }
+            }}
+          >
             <div className={[styles.miscCheckbox, wonWithClosedRon && styles.miscCheckboxChecked].join(' ')}></div>
             <span>Won via Ron with a Closed Hand</span>
           </div>
