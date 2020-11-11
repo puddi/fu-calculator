@@ -1,0 +1,39 @@
+.content {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 12px 0;
+  background-color: #282c34;
+}
+
+.fuHeader {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.scoringTable {
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.options {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.options > div {
+  margin: 10px 15px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.closeOption {
+  border: 1px solid #49515f;
+}
+
+.closeAndResetOption {
+  background-color: #ae3a43;
+  border: 1px solid #ae3a43;
+}

@@ -1,24 +1,32 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import styles from './App.module.css';
+import FuForm from './FuForm';
+import FuResultsModal from './FuResultsModal';
 
 function App() {
+  const [fu, setFu] = React.useState<number>(0);
+  const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
+  const resetFormRef = React.useRef<() => unknown | null>()
+
+  const formHandler = (calculatedFu: number, resetHandler: () => unknown) => {
+    resetFormRef.current = resetHandler;
+    setFu(calculatedFu);
+    setIsModalOpen(true);
+  }
+
+  const closeHandler = (clearForm: boolean) => {
+    setIsModalOpen(false);
+    if (clearForm) {
+      resetFormRef.current?.();
+    }
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={styles.app}>
+      <FuForm submitFu={formHandler} />
+      <div className={[styles.resultModalContainer, !isModalOpen && styles.resultModalContainerHidden].join(' ')}>
+        {isModalOpen && <FuResultsModal fu={fu} closeHandler={closeHandler} />}
+      </div>
     </div>
   );
 }
